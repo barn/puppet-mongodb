@@ -1,13 +1,21 @@
 # Class: mongodb
 
-class mongodb {
+class mongodb inherits mongodb::params {
 
-	include mongodb::params
-	include mongodb::logrotate
+	anchor{ 'mongodb::begin':
+		before => Anchor['mongodb::install::begin'],
+	}
+
+	anchor { 'mongodb::end': }
+
+	class { 'mongodb::logrotate':
+		require => Anchor['mongodb::install::end'],
+		before => Anchor['mongodb::end'],
+	}
 
 	case $operatingsystem {
 		/(?i)(Debian|Ubuntu|RedHat|CentOS)/: {
-			include mongodb::install
+			class { 'mongodb::install': }
 		}
 		default: {
 			fail "Unsupported OS ${operatingsystem} in 'mongodb' module"
@@ -15,7 +23,19 @@ class mongodb {
 	}
 
 	File {
-		require => [Class['mongodb::install'],Class['mongodb::params']]
+		require => Anchor['mongodb::install::end'],
+	}
+
+	# stop and disable default mongod
+
+	service {
+		"mongod":
+			ensure => stopped,
+			enable => false,
+			hasstatus => true,
+			hasrestart => true,
+			require => Anchor['mongodb::install::end'],
+			before => Anchor['mongodb::end'],
 	}
 
 	define mongod (
@@ -50,7 +70,8 @@ class mongodb {
 			ensure     => $mongod_running,
 			hasstatus  => true,
 			hasrestart => true,
-			require    => File["/etc/init.d/mongod_${mongod_instance}"],
+			require    => [File["/etc/init.d/mongod_${mongod_instance}"],Service['mongod']],
+			before     => Anchor['mongodb::end']
 		}
 	}
 
@@ -83,7 +104,8 @@ class mongodb {
 			ensure     => $mongos_running,
 			hasstatus  => true,
 			hasrestart => true,
-			require    => File["/etc/init.d/mongos_${mongos_instance}"],
+			require    => [File["/etc/init.d/mongos_${mongos_instance}"],Service['mongod']],
+			before     => Anchor['mongodb::end']
 		}
 	}
 

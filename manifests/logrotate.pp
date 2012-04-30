@@ -5,6 +5,9 @@
 
 class mongodb::logrotate {
 
+	anchor { 'mongodb::logrotate::begin': }
+	anchor { 'mongodb::logrotate::end': }
+
 	if ! defined(Package['logrotate']) {
 		package {
 			'logrotate':
@@ -19,6 +22,7 @@ class mongodb::logrotate {
 	file {
 		'/etc/logrotate.d/mongodb':
 			content => template('mongodb/logrotate.conf.erb'),
-			require => Package['logrotate'];
+			require => Package['logrotate'],
+			before => Anchor['mongodb::logrotate::end']
 	}
 }
