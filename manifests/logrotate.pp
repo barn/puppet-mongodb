@@ -5,24 +5,24 @@
 
 class mongodb::logrotate {
 
-	anchor { 'mongodb::logrotate::begin': }
-	anchor { 'mongodb::logrotate::end': }
+  anchor { 'mongodb::logrotate::begin': }
+  anchor { 'mongodb::logrotate::end': }
 
-	if ! defined(Package['logrotate']) {
-		package {
-			'logrotate':
-				ensure => installed;
-		}
-	}
+  if ! defined(Package['logrotate']) {
+    package {
+      'logrotate':
+        ensure => installed;
+    }
+  }
 
-	File {
-		require => [Class['mongodb::install'],Class['mongodb::params']]
-	}
+  File {
+    require => [Class['mongodb::install'],Class['mongodb::params']]
+  }
 
-	file {
-		'/etc/logrotate.d/mongodb':
-			content => template('mongodb/logrotate.conf.erb'),
-			require => Package['logrotate'],
-			before => Anchor['mongodb::logrotate::end']
-	}
+  file {
+    '/etc/logrotate.d/mongodb':
+      content => template('mongodb/logrotate.conf.erb'),
+      require => Package['logrotate'],
+      before => Anchor['mongodb::logrotate::end']
+  }
 }
