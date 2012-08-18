@@ -6,7 +6,7 @@ class mongodb::install {
   anchor { 'mongodb::install::begin': }
   anchor { 'mongodb::install::end': }
 
-  include $mongodb::params::repo_class
+  class { $mongodb::params::repo_class: }
 
   package { 'mongodb-stable':
     name   => $mongodb::params::old_server_pkg_name,
