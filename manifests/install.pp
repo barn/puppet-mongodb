@@ -3,6 +3,8 @@
 #
 class mongodb::install {
 
+  include mongodb::params
+
   anchor { 'mongodb::install::begin': }
   anchor { 'mongodb::install::end': }
 
