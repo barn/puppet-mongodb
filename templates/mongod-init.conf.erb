@@ -25,6 +25,12 @@ DBPATH=`awk -F= '/^dbpath=/{print $2}' "$CONFIGFILE"`
 PIDFILE=`awk -F= '/^pidfilepath=/{print $2}' "$CONFIGFILE"`
 mongod=${MONGOD-/usr/bin/mongod}
 
+# http://www.mongodb.org/display/DOCS/NUMA
+if [ -e '/usr/bin/numactl' ]
+then
+  monogod="/usr/bin/numactl --interleave=all ${mongod}"
+fi
+
 MONGO_USER=<%= scope.lookupvar('mongodb::params::run_as_user') %>
 MONGO_GROUP=<%= scope.lookupvar('mongodb::params::run_as_group') %>
 
